@@ -829,6 +829,83 @@ class DividerDrawer(object):
         text = re.sub("\<justify\>", "\n<para alignment='justify'>", text)
         return text.strip().strip('\n')
 
+    def drawOutline(self,
+                    card,
+                    x,
+                    y,
+                    rightSide,
+                    isBack=False):
+        # draw outline or cropmarks
+
+        # Don't draw anything if zero (or less) line width
+        if self.options.linewidth <= 0.0:
+            return
+
+        self.canvas.saveState()
+        self.canvas.setLineWidth(self.options.linewidth)
+        cropmarksright = (x == self.options.numDividersHorizontal - 1)
+        cropmarksleft = (x == 0)
+        if rightSide:
+            self.canvas.translate(self.options.dividerWidth, 0)
+            self.canvas.scale(-1, 1)
+        if not self.options.cropmarks and not isBack:
+            # don't draw outline on back, in case lines don't line up with
+            # front
+            self.getOutline(card)
+
+        elif self.options.cropmarks and not self.options.wrapper:
+            cmw = 0.5 * cm
+
+            # Horizontal-line cropmarks
+            mirror = cropmarksright and not rightSide or cropmarksleft and rightSide
+            if mirror:
+                self.canvas.saveState()
+                self.canvas.translate(self.options.dividerWidth, 0)
+                self.canvas.scale(-1, 1)
+            if cropmarksleft or cropmarksright:
+                self.canvas.line(-2 * cmw, 0, -cmw, 0)
+                self.canvas.line(-2 * cmw, self.options.dividerBaseHeight,
+                                 -cmw, self.options.dividerBaseHeight)
+                if y > 0:
+                    self.canvas.line(-2 * cmw, self.options.dividerHeight,
+                                     -cmw, self.options.dividerHeight)
+            if mirror:
+                self.canvas.restoreState()
+
+            # Vertical-line cropmarks
+
+            # want to always draw the right-edge and middle-label-edge lines..
+            # ...and draw the left-edge if this is the first card on the left
+
+            # ...but we need to take mirroring into account, to know "where"
+            # to draw the left / right lines...
+            if rightSide:
+                leftLine = self.options.dividerWidth
+                rightLine = 0
+            else:
+                leftLine = 0
+                rightLine = self.options.dividerWidth
+            middleLine = self.options.dividerWidth - self.options.labelWidth
+
+            if y == 0:
+                self.canvas.line(rightLine, -2 * cmw, rightLine, -cmw)
+                self.canvas.line(middleLine, -2 * cmw, middleLine, -cmw)
+                if cropmarksleft:
+                    self.canvas.line(leftLine, -2 * cmw, leftLine, -cmw)
+            if y == self.options.numDividersVertical - 1:
+                self.canvas.line(rightLine, self.options.dividerHeight + cmw,
+                                 rightLine,
+                                 self.options.dividerHeight + 2 * cmw)
+                self.canvas.line(middleLine, self.options.dividerHeight + cmw,
+                                 middleLine,
+                                 self.options.dividerHeight + 2 * cmw)
+                if cropmarksleft:
+                    self.canvas.line(
+                        leftLine, self.options.dividerHeight + cmw, leftLine,
+                        self.options.dividerHeight + 2 * cmw)
+
+        self.canvas.restoreState()
+
     def drawCardCount(self, card, x, y, offset=-1):
         # Note that this is right justified.
         # x represents the right most for the image (image grows to the left)
