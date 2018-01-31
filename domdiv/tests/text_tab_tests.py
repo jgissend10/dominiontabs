@@ -235,6 +235,7 @@ class TestTextTabs(unittest.TestCase):
             ['--tab-name-align', 'edge', '--tab-side', 'full'])
         self.assertEquals(options.tab_name_align, 'edge')
         self.assertEquals(options.tab_side, 'full')
+        options = main.clean_opts(options)
         main.calculate_layout(options)
         self.assertEquals(options.tab_name_align,
                           'left')  # special check for odd condition
@@ -294,6 +295,7 @@ class TestTextTabs(unittest.TestCase):
                                    'center', '--tab-side', 'left'])
         self.assertEquals(options.tab_name_align, 'center')
         self.assertEquals(options.tab_side, 'left')
+        options = main.clean_opts(options)
         main.calculate_layout(options)
         self.assertEquals(options.tab_name_align,
                           'centre')  # check for change in value
